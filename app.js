@@ -1,7 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors"
-// import route from "./routes/index.js";
+import route from "./routes/index.js";
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -17,7 +17,7 @@ mongoose.connect(uri)
 
 // app.use(route,cors());
 app.use(cors());
-// app.use(route);
+app.use(route);
 
 app.get("/",(req,res)=>{
     res.json("Running");
