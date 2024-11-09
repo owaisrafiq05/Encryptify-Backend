@@ -9,12 +9,6 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 
-const uri = "mongodb+srv://admin:admin@cluster0.oplpgp2.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0/encryptify"
-
-mongoose.connect(uri)
-    .then(() => console.log("mongodb connected!"))
-    .catch((error) => console.log("err mongodb", error.message))
-
 // app.use(route,cors());
 app.use(cors());
 app.use(route);
