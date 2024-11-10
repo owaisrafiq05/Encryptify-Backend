@@ -1,7 +1,8 @@
 import express from "express";
 import { encryptController, decryptController } from "../controllers/cipherController.js";
 import { encryptRailFence, decryptRailFence } from "../controllers/RailFenceController.js";
-import { vigenereEncrypt, vigenereDecrypt } from "../controllers/vigenereCipherController.js";
+import { vigenereEncrypt, vigenereDecrypt } from "../controllers/vigenereCipher.js";
+import { vernamEncrypt, vernamDecrypt } from "../controllers/vernamCipher.js";
 
 
 const route = express.Router();
@@ -13,5 +14,7 @@ route.post("/rail-fence-encrypt", encryptRailFence);
 route.post("/rail-fence-decrypt", decryptRailFence);
 route.post("/vigenere-encrypt", vigenereEncrypt);
 route.post("/vigenere-decrypt", vigenereDecrypt);
+route.post("/vernam-encrypt", vernamEncrypt);
+route.post("/vernam-decrypt", vernamDecrypt);
 
 export default route;
