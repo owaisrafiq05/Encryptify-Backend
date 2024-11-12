@@ -70,15 +70,15 @@ export const vernamDecrypt = (req, res) => {
 
 // Vernam Cipher Function without Base64 Encoding
 const vernamCipher = (text, key, mode) => {
-    const getCharNumber = char => char.toUpperCase().charCodeAt(0) - 64; // Convert A-Z to 1-26
-    const getCharFromNumber = num => String.fromCharCode((num - 1) % 26 + 65); // Convert 1-26 back to A-Z
+    const getCharNumber = char => char.toUpperCase().charCodeAt(0) - 65; // Convert A-Z to 1-26
+    const getCharFromNumber = num => String.fromCharCode((num % 26) + 65); // Convert 1-26 back to A-Z
     let result = "";
 
     for (let i = 0; i < text.length; i++) {
         const textNum = getCharNumber(text[i]);
         const keyNum = getCharNumber(key[i]);
         const xorNum = textNum ^ keyNum; // XOR the numbers
-        const cipherChar = getCharFromNumber((xorNum % 26) + 1); // Map to A-Z range
+        const cipherChar = getCharFromNumber(xorNum); // Map to A-Z range
         result += cipherChar;
     }
 
