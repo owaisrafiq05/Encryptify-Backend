@@ -10,6 +10,13 @@ export const vigenereEncrypt = (req, res) => {
         });
     }
 
+    if (text.length() != key.length()) {
+        return res.status(400).json({
+            message: "Text and key length should be same",
+            status: false
+        });
+    }
+
     try {
         const encryptedText = vigenereCipher(text, key, "encrypt");
         res.status(200).json({
@@ -34,6 +41,14 @@ export const vigenereDecrypt = (req, res) => {
             status: false
         });
     }
+
+    if (text.length() != key.length()) {
+        return res.status(400).json({
+            message: "Text and key length should be same",
+            status: false
+        });
+    }
+    
 
     try {
         const decryptedText = vigenereCipher(text, key, "decrypt");
