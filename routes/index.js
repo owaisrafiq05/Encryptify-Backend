@@ -3,7 +3,7 @@ import { encryptController, decryptController } from "../controllers/cipherContr
 import { encryptRailFence, decryptRailFence } from "../controllers/RailFenceController.js";
 import { vigenereEncrypt, vigenereDecrypt } from "../controllers/vigenereCipher.js";
 import { vernamEncrypt, vernamDecrypt } from "../controllers/vernamCipher.js";
-
+import { playfairEncrypt , playfairDecrypt } from "../controllers/playFairCipher.js"
 
 const route = express.Router();
 
@@ -16,5 +16,7 @@ route.post("/vigenere-encrypt", vigenereEncrypt);
 route.post("/vigenere-decrypt", vigenereDecrypt);
 route.post("/vernam-encrypt", vernamEncrypt);
 route.post("/vernam-decrypt", vernamDecrypt);
+route.post("/playfair-encrypt", playfairEncrypt);
+route.post("/playfair-decrypt", playfairDecrypt);
 
 export default route;
