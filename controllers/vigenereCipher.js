@@ -1,18 +1,9 @@
-// Vigenere Cipher Encryption and Decryption Controller
-
 export const vigenereEncrypt = (req, res) => {
     const { text, key } = req.body;
 
     if (!text || !key) {
         return res.status(400).json({
             message: "Text and key are required for encryption.",
-            status: false
-        });
-    }
-
-    if (text.length != key.length) {
-        return res.status(400).json({
-            message: "Text and key length should be same",
             status: false
         });
     }
@@ -42,14 +33,6 @@ export const vigenereDecrypt = (req, res) => {
         });
     }
 
-    if (text.length != key.length) {
-        return res.status(400).json({
-            message: "Text and key length should be same",
-            status: false
-        });
-    }
-    
-
     try {
         const decryptedText = vigenereCipher(text, key, "decrypt");
         res.status(200).json({
@@ -70,8 +53,8 @@ const vigenereCipher = (text, key, mode) => {
     let result = "";
     const upperText = text.toUpperCase();
     const upperKey = key.toUpperCase();
-
     let keyIndex = 0;
+
     for (let i = 0; i < upperText.length; i++) {
         const char = upperText[i];
 
@@ -88,7 +71,7 @@ const vigenereCipher = (text, key, mode) => {
             }
 
             result += String.fromCharCode(newCharCode + 65);
-            keyIndex++;
+            keyIndex++; // Move to the next character in the key
         } else {
             // Non-alphabet characters remain unchanged
             result += char;
