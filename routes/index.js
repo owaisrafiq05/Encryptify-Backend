@@ -5,6 +5,7 @@ import { vigenereEncrypt, vigenereDecrypt } from "../controllers/vigenereCipher.
 import { vernamEncrypt, vernamDecrypt } from "../controllers/vernamCipher.js";
 import { playfairEncrypt , playfairDecrypt } from "../controllers/playFairCipher.js"
 import { aesEncrypt, aesDecrypt } from '../controllers/aesCipher.js'; 
+import { rsaEncrypt, rsaDecrypt } from '../controllers/rsaCipher.js'; 
 
 const route = express.Router();
 
@@ -21,5 +22,8 @@ route.post("/playfair-encrypt", playfairEncrypt);
 route.post("/playfair-decrypt", playfairDecrypt);
 route.post('/aes-encrypt', aesEncrypt);
 route.post('/aes-decrypt', aesDecrypt);
+route.post('/rsa-encrypt',rsaEncrypt);
+route.post('/rsa-decrypt',rsaDecrypt);
+
 
 export default route;
