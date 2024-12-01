@@ -8,6 +8,9 @@ import { aesEncrypt, aesDecrypt } from '../controllers/aesCipher.js';
 import { rsaEncrypt, rsaDecrypt } from '../controllers/rsaCipher.js'; 
 import {hashController} from '../controllers/sha256Controller.js';
 import {sha512Controller} from '../controllers/sha512Controller.js';
+import { desEncrypt, desDecrypt } from '../controllers/desCipher.js'; 
+import { sha0Hash } from "../controllers/SHA-0.js";
+import {sha1Hash} from "../controllers/SHA-1.js";
 
 const route = express.Router();
 
@@ -28,5 +31,11 @@ route.post('/rsa-encrypt',rsaEncrypt);
 route.post('/rsa-decrypt',rsaDecrypt);
 route.post('/sha-256Hash',hashController);
 route.post('/sha-512Hash',sha512Controller);
+route.post('/des-encrypt', desEncrypt);
+route.post('/des-decrypt', desDecrypt);
+
+
+route.post("/sha0-hash", sha0Hash);
+route.post("/sha1-hash", sha1Hash);
 
 export default route;
