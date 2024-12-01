@@ -1,3 +1,5 @@
+// AES Encryption & Decryption without external libraries
+
 // Encrypt endpoint
 export const aesEncrypt = (req, res) => {
   const { text, key } = req.body;
@@ -10,7 +12,6 @@ export const aesEncrypt = (req, res) => {
   }
 
   if (key.length !== 16) {
-    // Only 128-bit AES supported
     return res.status(400).json({
       message: "Key length should be 16 characters (128 bits).",
       status: false,
@@ -18,10 +19,12 @@ export const aesEncrypt = (req, res) => {
   }
 
   try {
-    const encryptedText = aesCipher(text, key, "encrypt");
+    const iv = generateRandomBytes(16);
+    const encryptedText = aesCbcEncrypt(text, key, iv);
+
     res.status(200).json({
       message: "Encryption successful",
-      encryptedText: encryptedText,
+      encryptedText: iv + encryptedText,
       status: true,
     });
   } catch (error) {
@@ -44,7 +47,6 @@ export const aesDecrypt = (req, res) => {
   }
 
   if (key.length !== 16) {
-    // Only 128-bit AES supported
     return res.status(400).json({
       message: "Key length should be 16 characters (128 bits).",
       status: false,
@@ -52,7 +54,10 @@ export const aesDecrypt = (req, res) => {
   }
 
   try {
-    const decryptedText = aesCipher(text, key, "decrypt");
+    const iv = text.slice(0, 16); // Extract the IV from the beginning
+    const encryptedText = text.slice(16);
+    const decryptedText = aesCbcDecrypt(encryptedText, key, iv);
+
     res.status(200).json({
       message: "Decryption successful",
       decryptedText: decryptedText,
@@ -66,106 +71,118 @@ export const aesDecrypt = (req, res) => {
   }
 };
 
-// AES Cipher Function
-const aesCipher = (text, key, mode) => {
-  if (text.length % 16 !== 0) {
-    text = text.padEnd(Math.ceil(text.length / 16) * 16, "\0");
+// Helper function to convert a string to an array of byte values
+const stringToBytes = (str) => Array.from(str).map(c => c.charCodeAt(0));
+
+// Helper function to convert an array of byte values to a string
+const bytesToString = (bytes) => bytes.map(b => String.fromCharCode(b)).join('');
+
+// Generate Random Bytes
+const generateRandomBytes = (length) => {
+  let bytes = "";
+  for (let i = 0; i < length; i++) {
+    bytes += String.fromCharCode(Math.floor(Math.random() * 256));
   }
-
-  const keyBytes = Array.from(key).map((c) => c.charCodeAt(0));
-  const textBytes = Array.from(text).map((c) => c.charCodeAt(0));
-
-  const expandedKey = keyExpansion(keyBytes);
-  const blocks = [];
-
-  for (let i = 0; i < textBytes.length; i += 16) {
-    let block = textBytes.slice(i, i + 16);
-
-    if (mode === "encrypt") {
-      block = encryptBlock(block, expandedKey);
-    } else {
-      block = decryptBlock(block, expandedKey);
-    }
-
-    blocks.push(block);
-  }
-
-  return blocks
-    .flat()
-    .map((byte) => String.fromCharCode(byte))
-    .join("")
-    .trim();
+  return bytes;
 };
 
-// Encrypt a single 16-byte block
-const encryptBlock = (block, expandedKey) => {
-  addRoundKey(block, expandedKey.slice(0, 16));
+// AES CBC Encryption
+const aesCbcEncrypt = (text, key, iv) => {
+  const paddedText = pkcs7Pad(text, 16);
+  const blocks = [];
+  let previousBlock = stringToBytes(iv);  // Convert IV to bytes
 
+  for (let i = 0; i < paddedText.length; i += 16) {
+    let block = stringToBytes(paddedText.slice(i, i + 16));
+
+    // XOR with previous block (IV for the first block)
+    block = xorBlocks(block, previousBlock);
+
+    // Encrypt the block
+    const encryptedBlock = aesEncryptBlock(block, keyExpansion(key));
+    blocks.push(bytesToString(encryptedBlock));  // Convert back to string
+
+    previousBlock = encryptedBlock;
+  }
+
+  return blocks.join("");
+};
+
+// AES CBC Decryption
+const aesCbcDecrypt = (encryptedText, key, iv) => {
+  const blocks = [];
+  let previousBlock = stringToBytes(iv);
+  const expandedKey = keyExpansion(key);
+
+  for (let i = 0; i < encryptedText.length; i += 16) {
+    let block = stringToBytes(encryptedText.slice(i, i + 16));
+
+    // Decrypt the block
+    const decryptedBlock = aesDecryptBlock(block, expandedKey);
+
+    // XOR with previous block (IV for the first block)
+    const originalBlock = xorBlocks(decryptedBlock, previousBlock);
+    blocks.push(bytesToString(originalBlock));  // Convert back to string
+
+    previousBlock = block;
+  }
+
+  return pkcs7Unpad(blocks.join(""));
+};
+
+// XOR two blocks
+const xorBlocks = (block1, block2) => {
+  return block1.map((byte, i) => byte ^ block2[i]);
+};
+
+// PKCS7 Padding
+const pkcs7Pad = (text, blockSize) => {
+  const padSize = blockSize - (text.length % blockSize);
+  const padding = String.fromCharCode(padSize).repeat(padSize);
+  return text + padding;
+};
+
+// PKCS7 Unpadding
+const pkcs7Unpad = (text) => {
+  const padSize = text.charCodeAt(text.length - 1);
+  return text.slice(0, -padSize);
+};
+
+// AES Encrypt single block
+const aesEncryptBlock = (block, expandedKey) => {
+  addRoundKey(block, expandedKey.slice(0, 16));
   for (let round = 1; round < 10; round++) {
     subBytes(block);
     shiftRows(block);
     mixColumns(block);
     addRoundKey(block, expandedKey.slice(round * 16, (round + 1) * 16));
   }
-
   subBytes(block);
   shiftRows(block);
   addRoundKey(block, expandedKey.slice(160, 176));
-
   return block;
 };
 
-// Decrypt a single 16-byte block
-const decryptBlock = (block, expandedKey) => {
+// AES Decrypt single block
+const aesDecryptBlock = (block, expandedKey) => {
   addRoundKey(block, expandedKey.slice(160, 176));
   invShiftRows(block);
   invSubBytes(block);
-
   for (let round = 9; round > 0; round--) {
     addRoundKey(block, expandedKey.slice(round * 16, (round + 1) * 16));
     invMixColumns(block);
     invShiftRows(block);
     invSubBytes(block);
   }
-
   addRoundKey(block, expandedKey.slice(0, 16));
-
   return block;
 };
 
-// Key Expansion
-const keyExpansion = (key) => {
-  const expandedKey = new Uint8Array(176);
-  for (let i = 0; i < key.length; i++) {
-    expandedKey[i] = key[i];
+// AddRoundKey Transformation
+const addRoundKey = (state, roundKey) => {
+  for (let i = 0; i < 16; i++) {
+    state[i] ^= roundKey[i];
   }
-
-  let bytesGenerated = key.length;
-  let rconIndex = 1;
-
-  while (bytesGenerated < expandedKey.length) {
-    let temp = expandedKey.slice(bytesGenerated - 4, bytesGenerated);
-
-    const temp0 = temp[0];
-    for (let i = 0; i < 3; i++) {
-      temp[i] = temp[i + 1];
-    }
-    temp[3] = temp0;
-
-    for (let i = 0; i < 4; i++) {
-      temp[i] = sBox[temp[i]];
-    }
-
-    temp[0] ^= rcon[rconIndex++];
-
-    for (let i = 0; i < 4; i++) {
-      expandedKey[bytesGenerated] =
-        expandedKey[bytesGenerated - key.length] ^ temp[i];
-      bytesGenerated++;
-    }
-  }
-
-  return expandedKey;
 };
 
 // SubBytes Transformation
@@ -175,6 +192,7 @@ const subBytes = (state) => {
   }
 };
 
+// Inverse SubBytes Transformation
 const invSubBytes = (state) => {
   for (let i = 0; i < state.length; i++) {
     state[i] = invSBox[state[i]];
@@ -198,20 +216,21 @@ const shiftRows = (state) => {
   state[7] = temp[3];
 };
 
+// Inverse ShiftRows Transformation
 const invShiftRows = (state) => {
   const temp = state.slice();
   state[1] = temp[13];
   state[5] = temp[1];
   state[9] = temp[5];
   state[13] = temp[9];
-  state[2] = temp[10];
+  state[2] = temp[6];
+  state[6] = temp[10];
   state[10] = temp[14];
-  state[14] = temp[6];
-  state[6] = temp[2];
-  state[3] = temp[3];
-  state[7] = temp[7];
-  state[11] = temp[11];
-  state[15] = temp[15];
+  state[14] = temp[2];
+  state[3] = temp[7];
+  state[7] = temp[11];
+  state[11] = temp[15];
+  state[15] = temp[3];
 };
 
 // MixColumns Transformation
@@ -229,6 +248,7 @@ const mixColumns = (state) => {
   }
 };
 
+// Inverse MixColumns Transformation
 const invMixColumns = (state) => {
   for (let i = 0; i < 4; i++) {
     const a = state[i * 4];
@@ -243,14 +263,51 @@ const invMixColumns = (state) => {
   }
 };
 
-// AddRoundKey Transformation
-const addRoundKey = (state, roundKey) => {
-  for (let i = 0; i < 16; i++) {
-    state[i] ^= roundKey[i];
+// AES Key Expansion
+const keyExpansion = (key) => {
+  const expandedKey = new Uint8Array(176);
+  for (let i = 0; i < key.length; i++) {
+    expandedKey[i] = key.charCodeAt(i);
   }
+
+  let bytesGenerated = key.length;
+  let rconIndex = 1;
+  const temp = new Uint8Array(4);
+
+  while (bytesGenerated < 176) {
+    for (let i = 0; i < 4; i++) {
+      temp[i] = expandedKey[bytesGenerated - 4 + i];
+    }
+
+    if (bytesGenerated % 16 === 0) {
+      keyScheduleCore(temp, rconIndex++);
+    }
+
+    for (let i = 0; i < 4; i++) {
+      expandedKey[bytesGenerated] = expandedKey[bytesGenerated - 16] ^ temp[i];
+      bytesGenerated++;
+    }
+  }
+
+  return expandedKey;
 };
 
-// S-box and Inverse S-box Arrays
+// Key Schedule Core
+const keyScheduleCore = (word, rconIndex) => {
+  const temp = word[0];
+  for (let i = 0; i < 3; i++) {
+    word[i] = word[i + 1];
+  }
+  word[3] = temp;
+
+  for (let i = 0; i < 4; i++) {
+    word[i] = sBox[word[i]];
+  }
+
+  word[0] ^= rcon[rconIndex];
+};
+
+// S-box array
 const sBox = [
   0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe,
   0xd7, 0xab, 0x76, 0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4,
@@ -274,7 +331,7 @@ const sBox = [
   0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16,
 ];
 
-// Inverse S-box
+// Inverse S-box array
 const invSBox = [
   0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81,
   0xf3, 0xd7, 0xfb, 0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87, 0x34, 0x8e,
@@ -298,9 +355,9 @@ const invSBox = [
   0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d,
 ];
 
-// Key expansion constants
+// RCON array
 const rcon = [
-  0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8, 0xab,
-  0x4d, 0x9a, 0x2f, 0x5e, 0xbc, 0x63, 0xc6, 0x97, 0x35, 0x6a, 0xd4, 0xb3, 0x7d,
-  0xfa, 0xef, 0xc5, 0x91,
+  0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8,
+  0xab, 0x4d, 0x9a, 0x2f, 0x5e, 0xbc, 0x63, 0xc6, 0x97, 0x35, 0x6a, 0xd4, 0xb3,
+  0x7d, 0xfa, 0xef, 0xc5, 0x91
 ];

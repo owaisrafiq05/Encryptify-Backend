@@ -6,6 +6,8 @@ import { vernamEncrypt, vernamDecrypt } from "../controllers/vernamCipher.js";
 import { playfairEncrypt , playfairDecrypt } from "../controllers/playFairCipher.js"
 import { aesEncrypt, aesDecrypt } from '../controllers/aesCipher.js'; 
 import { rsaEncrypt, rsaDecrypt } from '../controllers/rsaCipher.js'; 
+import {hashController} from '../controllers/sha256Controller.js';
+import {sha512Controller} from '../controllers/sha512Controller.js';
 
 
 
@@ -26,6 +28,7 @@ route.post('/aes-encrypt', aesEncrypt);
 route.post('/aes-decrypt', aesDecrypt);
 route.post('/rsa-encrypt',rsaEncrypt);
 route.post('/rsa-decrypt',rsaDecrypt);
-
+route.post('/sha-256Hash',hashController);
+route.post('/sha-512Hash',sha512Controller);
 
 export default route;
