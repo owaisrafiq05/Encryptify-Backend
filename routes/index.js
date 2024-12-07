@@ -15,6 +15,7 @@ import { sha3Hash } from '../controllers/SHA-3.js';
 import { tripleDesDecryption,tripleDesEncryption } from "../controllers/tripleDesCipher.js";
 // import {hash512} from '../controllers/sha512Controller.js';
 import { sha512Hash } from '../controllers/sha512Controller.js';
+import { sha224Hash } from '../controllers/sha224Controller.js';
 const route = express.Router();
 
 // Caesar Cipher Encryption and Decryption Routes
@@ -42,6 +43,7 @@ route.post("/sha0-hash", sha0Hash);
 route.post("/sha1-hash", sha1Hash);
 route.post("/sha3-hash", sha3Hash);
 route.post('/sha-256Hash',hashController);
+route.post('/sha-224Hash',sha224Hash);
 
 
 export default route;

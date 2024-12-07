@@ -66,51 +66,51 @@ const padMessage = (message) => {
   return Buffer.concat([Buffer.from(bytes), padding, lengthBuffer]);
 };
 function sha512(message) {
-  const paddedMessage = padMessage(message);
-  const blocks = paddedMessage.length / 128;
+    const paddedMessage = padMessage(message);
+    const blocks = paddedMessage.length / 128;
 
-  let [a, b, c, d, e, f, g, h] = H;
+    let [a, b, c, d, e, f, g, h] = H;
 
-  for (let i = 0; i < blocks; i++) {
-      const W = Array(80).fill(0n);
-      const block = paddedMessage.slice(i * 128, (i + 1) * 128);
+    for (let i = 0; i < blocks; i++) {
+        const W = Array(80).fill(0n);
+        const block = paddedMessage.slice(i * 128, (i + 1) * 128);
 
-      // Message schedule
-      for (let t = 0; t < 16; t++) {
-          W[t] = BigInt('0x' + block.slice(t * 8, t * 8 + 8).toString('hex'));
-      }
-      for (let t = 16; t < 80; t++) {
-          const s0 = rotateRight(W[t - 15], 1n) ^ rotateRight(W[t - 15], 8n) ^ (W[t - 15] >> 7n);
-          const s1 = rotateRight(W[t - 2], 19n) ^ rotateRight(W[t - 2], 61n) ^ (W[t - 2] >> 6n);
-          W[t] = (W[t - 16] + s0 + W[t - 7] + s1) & (2n ** 64n - 1n);
-      }
+        // Message schedule
+        for (let t = 0; t < 16; t++) {
+            W[t] = BigInt('0x' + block.slice(t * 8, t * 8 + 8).toString('hex'));
+        }
+        for (let t = 16; t < 80; t++) {
+            const s0 = rotateRight(W[t - 15], 1n) ^ rotateRight(W[t - 15], 8n) ^ (W[t - 15] >> 7n);
+            const s1 = rotateRight(W[t - 2], 19n) ^ rotateRight(W[t - 2], 61n) ^ (W[t - 2] >> 6n);
+            W[t] = (W[t - 16] + s0 + W[t - 7] + s1) & (2n ** 64n - 1n);
+        }
 
-      // Compression
-      let [A, B, C, D, E, F, G, H] = [a, b, c, d, e, f, g, h];
-      for (let t = 0; t < 80; t++) {
-          const S1 = rotateRight(E, 14n) ^ rotateRight(E, 18n) ^ rotateRight(E, 41n);
-          const ch = (E & F) ^ (~E & G);
-          const temp1 = (H + S1 + ch + K[t] + W[t]) & (2n ** 64n - 1n);
-          const S0 = rotateRight(A, 28n) ^ rotateRight(A, 34n) ^ rotateRight(A, 39n);
-          const maj = (A & B) ^ (A & C) ^ (B & C);
-          const temp2 = (S0 + maj) & (2n ** 64n - 1n);
+        // Compression
+        let [A, B, C, D, E, F, G, H] = [a, b, c, d, e, f, g, h];
+        for (let t = 0; t < 80; t++) {
+            const S1 = rotateRight(E, 14n) ^ rotateRight(E, 18n) ^ rotateRight(E, 41n);
+            const ch = (E & F) ^ (~E & G);
+            const temp1 = (H + S1 + ch + K[t] + W[t]) & (2n ** 64n - 1n);
+            const S0 = rotateRight(A, 28n) ^ rotateRight(A, 34n) ^ rotateRight(A, 39n);
+            const maj = (A & B) ^ (A & C) ^ (B & C);
+            const temp2 = (S0 + maj) & (2n ** 64n - 1n);
 
-          [H, G, F, E, D, C, B, A] = [G, F, E, (D + temp1) & (2n ** 64n - 1n), C, B, A, (temp1 + temp2) & (2n ** 64n - 1n)];
-      }
+            [H, G, F, E, D, C, B, A] = [G, F, E, (D + temp1) & (2n ** 64n - 1n), C, B, A, (temp1 + temp2) & (2n ** 64n - 1n)];
+        }
 
-      a = (a + A) & (2n ** 64n - 1n);
-      b = (b + B) & (2n ** 64n - 1n);
-      c = (c + C) & (2n ** 64n - 1n);
-      d = (d + D) & (2n ** 64n - 1n);
-      e = (e + E) & (2n ** 64n - 1n);
-      f = (f + F) & (2n ** 64n - 1n);
-      g = (g + G) & (2n ** 64n - 1n);
-      h = (h + H) & (2n ** 64n - 1n);
-  }
+        a = (a + A) & (2n ** 64n - 1n);
+        b = (b + B) & (2n ** 64n - 1n);
+        c = (c + C) & (2n ** 64n - 1n);
+        d = (d + D) & (2n ** 64n - 1n);
+        e = (e + E) & (2n ** 64n - 1n);
+        f = (f + F) & (2n ** 64n - 1n);
+        g = (g + G) & (2n ** 64n - 1n);
+        h = (h + H) & (2n ** 64n - 1n);
+    }
 
-  return [a, b, c, d, e, f, g, h]
-      .map((x) => x.toString(16).padStart(16, '0'))
-      .join('');
+    return [a, b, c, d, e, f, g, h]
+        .map((x) => x.toString(16).padStart(16, '0'))
+        .join('');
 }
 
 export default sha512;
