@@ -15,6 +15,7 @@
   "dependencies": {
     "bitwise": "^2.2.1",
     "cors": "^2.8.5",
+    "crypto-js": "^4.2.0",
     "express": "^4.21.1",
     "mongoose": "^8.8.0",
     "nodemon": "^3.1.7"

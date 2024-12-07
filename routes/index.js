@@ -4,7 +4,7 @@ import { encryptRailFence, decryptRailFence } from "../controllers/RailFenceCont
 import { vigenereEncrypt, vigenereDecrypt } from "../controllers/vigenereCipher.js";
 import { vernamEncrypt, vernamDecrypt } from "../controllers/vernamCipher.js";
 import { playfairEncrypt , playfairDecrypt } from "../controllers/playFairCipher.js"
-import { aesEncrypt, aesDecrypt } from '../controllers/aesCipher.js'; 
+import { aesEncryption, aesDecryption } from '../controllers/aesCipher.js'; 
 import { rsaEncrypt, rsaDecrypt } from '../controllers/rsaCipher.js'; 
 import {hashController} from '../controllers/sha256Controller.js';
 import {sha512Controller} from '../controllers/sha512Controller.js';
@@ -25,8 +25,8 @@ route.post("/vernam-encrypt", vernamEncrypt);
 route.post("/vernam-decrypt", vernamDecrypt);
 route.post("/playfair-encrypt", playfairEncrypt);
 route.post("/playfair-decrypt", playfairDecrypt);
-route.post('/aes-encrypt', aesEncrypt);
-route.post('/aes-decrypt', aesDecrypt);
+route.post('/aes-encrypt', aesEncryption);
+route.post('/aes-decrypt', aesDecryption);
 route.post('/rsa-encrypt',rsaEncrypt);
 route.post('/rsa-decrypt',rsaDecrypt);
 route.post('/sha-256Hash',hashController);
