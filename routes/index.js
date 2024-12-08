@@ -42,7 +42,7 @@ route.post('/3des-decrypt', tripleDesDecryption);
 route.post('/sha-512Hash',sha512Hash);
 route.post("/sha0-hash", sha0Hash);
 route.post("/sha1-hash", sha1Hash);
-route.post("/sha3-hash", sha3Hash);
+route.post("/sha-3Hash", sha3Hash);
 route.post('/sha-256Hash',hashController);
 route.post('/sha-224Hash',sha224Hash);
 route.post('/sha-384Hash',sha384Hash);
