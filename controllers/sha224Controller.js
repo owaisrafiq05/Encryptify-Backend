@@ -1,4 +1,5 @@
 export const sha224Hash = (req, res) => {
+    // This function handles the incoming request to hash a text message using SHA-224.
     const { text } = req.body;
     if (!text) {
       return res.status(400).json({
@@ -7,6 +8,7 @@ export const sha224Hash = (req, res) => {
       });
     }
     try {
+      // Hash the message using the sha224 function
       const hash = sha224(text);
       res.status(200).json({
         message: "Hashing successful",
@@ -21,14 +23,16 @@ export const sha224Hash = (req, res) => {
     }
   };
 
-  function sha224(message) {
+function sha224(message) {
+    // This function performs SHA-224 hashing on the provided message.
+
     // Initial hash values for SHA-224
     const H = [
         0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939,
         0xffc00b31, 0x68581511, 0x64f98fa7, 0xbefa4fa4
     ];
 
-    // K constants
+    // K constants used in the SHA-224 algorithm for each round of the hash function
     const K = [
         0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
         0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
@@ -40,40 +44,46 @@ export const sha224Hash = (req, res) => {
         0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
     ];
 
-    // Helper functions
+    // Helper function for rotating bits right
     function ROTR(n, x) {
         return (x >>> n) | (x << (32 - n));
     }
 
+    // Helper function for the "Ch" operation in SHA-224
     function Ch(x, y, z) {
         return (x & y) ^ (~x & z);
     }
 
+    // Helper function for the "Maj" operation in SHA-224
     function Maj(x, y, z) {
         return (x & y) ^ (x & z) ^ (y & z);
     }
 
+    // Helper function for the Σ0 operation in SHA-224
     function Σ0(x) {
         return ROTR(2, x) ^ ROTR(13, x) ^ ROTR(22, x);
     }
 
+    // Helper function for the Σ1 operation in SHA-224
     function Σ1(x) {
         return ROTR(6, x) ^ ROTR(11, x) ^ ROTR(25, x);
     }
 
+    // Helper function for the σ0 operation in SHA-224
     function σ0(x) {
         return ROTR(7, x) ^ ROTR(18, x) ^ (x >>> 3);
     }
 
+    // Helper function for the σ1 operation in SHA-224
     function σ1(x) {
         return ROTR(17, x) ^ ROTR(19, x) ^ (x >>> 10);
     }
 
-    // Pre-processing
+    // Pre-processing the input message (convert to bytes and add padding)
     const messageBytes = new TextEncoder().encode(message);
     const bitLength = messageBytes.length * 8;
 
-    // Padding
+    // Padding the message to ensure its length is a multiple of 512 bits
     const paddedMessage = new Uint8Array(
         ((messageBytes.length + 9 + 63) & ~63) // Round to nearest multiple of 64 bytes
     );
@@ -97,7 +107,7 @@ export const sha224Hash = (req, res) => {
         // Initialize working variables
         let [a, b, c, d, e, f, g, h] = H;
 
-        // Main loop
+        // Main loop to calculate the hash
         for (let t = 0; t < 64; t++) {
             const T1 = (h + Σ1(e) + Ch(e, f, g) + K[t] + W[t]) >>> 0;
             const T2 = (Σ0(a) + Maj(a, b, c)) >>> 0;
