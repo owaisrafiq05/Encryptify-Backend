@@ -17,19 +17,19 @@ const makeRequest = async (url, data) => {
   // Triple DES encryption function
   const tripleDESEncrypt = async (message, key1, key2, key3) => {
     // First encryption with key1
-    const firstEncryption = await makeRequest('http://localhost:5000/des-encrypt', {
+    const firstEncryption = await makeRequest('https://encryptify-backend.vercel.app/des-encrypt', {
       message: message,
       key: key1
     });
     
     // Second decryption with key2
-    const secondDecryption = await makeRequest('http://localhost:5000/des-decrypt', {
+    const secondDecryption = await makeRequest('https://encryptify-backend.vercel.app/des-decrypt', {
       message: firstEncryption.encryptedData,
       key: key2
     });
     
     // Third encryption with key3
-    const thirdEncryption = await makeRequest('http://localhost:5000/des-encrypt', {
+    const thirdEncryption = await makeRequest('https://encryptify-backend.vercel.app/des-encrypt', {
       message: secondDecryption.decryptedData,
       key: key3
     });
@@ -40,19 +40,19 @@ const makeRequest = async (url, data) => {
   // Triple DES decryption function
   const tripleDESDecrypt = async (ciphertext, key1, key2, key3) => {
     // First decryption with key3
-    const firstDecryption = await makeRequest('http://localhost:5000/des-decrypt', {
+    const firstDecryption = await makeRequest('https://encryptify-backend.vercel.app/des-decrypt', {
       message: ciphertext,
       key: key3
     });
     
     // Second encryption with key2
-    const secondEncryption = await makeRequest('http://localhost:5000/des-encrypt', {
+    const secondEncryption = await makeRequest('https://encryptify-backend.vercel.app/des-encrypt', {
       message: firstDecryption.decryptedData,
       key: key2
     });
     
     // Third decryption with key1
-    const thirdDecryption = await makeRequest('http://localhost:5000/des-decrypt', {
+    const thirdDecryption = await makeRequest('https://encryptify-backend.vercel.app/des-decrypt', {
       message: secondEncryption.encryptedData,
       key: key1
     });
@@ -119,4 +119,4 @@ const makeRequest = async (url, data) => {
       });
     }
   };
- //CEBB20B5D5D0224C
+ 
